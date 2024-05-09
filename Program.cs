@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 Process proc = new Process();
 
@@ -25,22 +26,20 @@ var searchTerm = args[0];
 var distances = new Dictionary<string, int>();
 distances.Add(branches[selectedIndex], 0);
 
-foreach(var branch in branches.Except(new List<string> { branches.ElementAt(selectedIndex) }).Where(b => b.Length >= searchTerm.Length))
+// Find matches
+var matchString = GetRegexString(searchTerm.Trim().ToLower());
+branches = branches.Except(new List<string> { branches.ElementAt(selectedIndex) }).Where(b => Regex.IsMatch(b.Trim().ToLower(), matchString)).ToList();
+selectedIndex = 0;
+
+foreach(var branch in branches.Where(b => b.Length >= searchTerm.Length))
 {
     distances.Add(branch, LevDistance(searchTerm.Trim().ToLower(), branch.Trim().ToLower()));
 }
-selectedIndex = 0;
 
-// TODO: REMOVE
-foreach(var d in distances)
-{
-    Console.WriteLine($"{d.Key} - {d.Value}");
-}
-
-branches = distances.Where(d => (d.Value / searchTerm.Length) < .5).OrderBy(d => d.Value).Select(o => o.Key).ToList();
+branches = distances.OrderBy(d => d.Value).Select(o => o.Key).ToList();
 
 // Draw loop
-while (false)
+while (true)
 {
     Draw(branches, selectedIndex);
     var input = Console.ReadKey().Key;
@@ -133,6 +132,18 @@ void Draw(List<string> branches, int selectedIndex)
 
         Console.ForegroundColor = defaultColor;
     }
+}
+
+string GetRegexString(string searchTerm)
+{
+    var sb = new StringBuilder();
+    sb.Append(".*");
+    foreach(var c in searchTerm)
+    {
+        sb.Append(c);
+    }
+    sb.Append(".*");
+    return sb.ToString();
 }
 
 int LevDistance(string a, string b)
