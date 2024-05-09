@@ -17,10 +17,30 @@ string output = proc.StandardOutput.ReadToEnd();
 proc.WaitForExit();
 
 var branches = ParseBranches(output);
+
 var selectedIndex = GetSelectedIndex(branches);
 
+
+var searchTerm = args[0];
+var distances = new Dictionary<string, int>();
+distances.Add(branches[selectedIndex], 0);
+
+foreach(var branch in branches.Except(new List<string> { branches.ElementAt(selectedIndex) }).Where(b => b.Length >= searchTerm.Length))
+{
+    distances.Add(branch, LevDistance(searchTerm.Trim().ToLower(), branch.Trim().ToLower()));
+}
+selectedIndex = 0;
+
+// TODO: REMOVE
+foreach(var d in distances)
+{
+    Console.WriteLine($"{d.Key} - {d.Value}");
+}
+
+branches = distances.Where(d => (d.Value / searchTerm.Length) < .5).OrderBy(d => d.Value).Select(o => o.Key).ToList();
+
 // Draw loop
-while (true)
+while (false)
 {
     Draw(branches, selectedIndex);
     var input = Console.ReadKey().Key;
@@ -31,7 +51,7 @@ while (true)
             SwitchBranch(selectedIndex, branches);
             return;
         case ConsoleKey.DownArrow:
-            if(selectedIndex < (branches.Length - 1))
+            if(selectedIndex < (branches.Count - 1))
             {
                 selectedIndex++;
             }
@@ -47,7 +67,7 @@ while (true)
     }
 }
 
-void SwitchBranch(int selectedIndex, string[] branches)
+void SwitchBranch(int selectedIndex, List<string> branches)
 {
     Console.Clear();
     var b = branches[selectedIndex].Replace("[X] ", "").Replace("[ ] ", "");
@@ -70,15 +90,15 @@ void SwitchBranch(int selectedIndex, string[] branches)
     Console.WriteLine(output);
 }
 
-string[] ParseBranches(string output)
+List<string> ParseBranches(string output)
 {
     var branches = output.Split('\n');
-    return branches.Where(b => !String.IsNullOrEmpty(b)).ToArray();
+    return branches.Where(b => !String.IsNullOrEmpty(b)).ToList();
 }
 
-int GetSelectedIndex(string[] branches)
+int GetSelectedIndex(List<string> branches)
 {
-    for(int i = 0; i < branches.Length; i++)
+    for(int i = 0; i < branches.Count; i++)
     {
         if (branches[i].StartsWith("*"))
         {
@@ -88,11 +108,11 @@ int GetSelectedIndex(string[] branches)
     return 0;
 }
 
-void Draw(string[] branches, int selectedIndex)
+void Draw(List<string> branches, int selectedIndex)
 {
     Console.Clear();
     var defaultColor = Console.ForegroundColor;
-    for(int i = 0; i < branches.Length; i++)
+    for(int i = 0; i < branches.Count; i++)
     {
         var sb = new StringBuilder();
         if (branches[i].StartsWith("*"))
@@ -113,4 +133,23 @@ void Draw(string[] branches, int selectedIndex)
 
         Console.ForegroundColor = defaultColor;
     }
+}
+
+int LevDistance(string a, string b)
+{
+    if(b.Length == 0)
+    {
+        return a.Length;
+    }
+    if(a.Length == 0)
+    {
+        return b.Length;
+    }
+
+    if(a[0] == b[0])
+    {
+        return LevDistance(a.Substring(1), b.Substring(1));
+    }
+
+    return (1 + Math.Min(Math.Min(LevDistance(a.Substring(1), b), LevDistance(a, b.Substring(1))), LevDistance(a.Substring(1), b.Substring(1))));
 }
