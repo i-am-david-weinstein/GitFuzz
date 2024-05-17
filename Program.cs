@@ -1,13 +1,19 @@
 ﻿using display.Drawer;
 using logic.BranchManager;
 using logic.SearchManager;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-var branchManager = new BranchManager();
-var searchManager = new SearchManager();
-var drawer = new Drawer(branchManager);
+var host = Host.CreateDefaultBuilder()
+    .ConfigureServices((context, services) =>
+    {
+        services.AddScoped<IBranchManager, BranchManager>();
+        services.AddScoped<ISearchManager, SearchManager>();
+        services.AddScoped<IDrawer, Drawer>();
+        services.AddScoped<GitFuzz>();
+    })
+    .Build();
 
-var searchTerm = args[0];
+var gf = ActivatorUtilities.CreateInstance<GitFuzz>(host.Services);
 
-var matchingBranches = searchManager.Search(searchTerm, branchManager.GetBranches());
-
-drawer.Draw(matchingBranches);
+gf.Run(args);

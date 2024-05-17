@@ -7,7 +7,7 @@ namespace display.Drawer
     public class Drawer : IDrawer
     {
 
-        private IBranchManager _branchManager;
+        private readonly IBranchManager _branchManager;
 
         public Drawer(IBranchManager branchManager)
         {
