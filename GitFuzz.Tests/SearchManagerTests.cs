@@ -70,11 +70,6 @@ public class SearchManagerTests
 
         var result = searchManager.Search(term, branches);
 
-        foreach(var item in result)
-        {
-            Console.WriteLine(item);
-        }
-
         Assert.True(result.Count == expected.Count);
         for(int i = 0; i < expected.Count; i++)
         {

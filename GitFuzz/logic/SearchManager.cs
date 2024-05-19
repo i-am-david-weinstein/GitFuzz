@@ -25,7 +25,6 @@ namespace logic.SearchManager
 
             // Find matches
             var matchString = GetRegexString(term.Trim().ToLower());
-            Console.WriteLine(matchString);
             var matchingBranches = branches.Except(new List<string> { branches.ElementAt(selectedIndex) }).Where(b => Regex.IsMatch(b.Trim().ToLower(), matchString)).ToList();
             selectedIndex = 0;
 
