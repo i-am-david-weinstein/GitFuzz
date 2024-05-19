@@ -9,6 +9,15 @@ namespace logic.SearchManager
 
         public List<string> Search(string term, List<string> branches)
         {
+            if(branches.Count == 0 || term == null)
+            {
+                return branches;
+            }
+            if(String.IsNullOrWhiteSpace(term))
+            {
+                return new List<string>();
+            }
+
             var selectedIndex = GetSelectedIndex(branches);
 
             var distances = new Dictionary<string, int>();
@@ -16,6 +25,7 @@ namespace logic.SearchManager
 
             // Find matches
             var matchString = GetRegexString(term.Trim().ToLower());
+            Console.WriteLine(matchString);
             var matchingBranches = branches.Except(new List<string> { branches.ElementAt(selectedIndex) }).Where(b => Regex.IsMatch(b.Trim().ToLower(), matchString)).ToList();
             selectedIndex = 0;
 
@@ -61,9 +71,9 @@ namespace logic.SearchManager
         private string GetRegexString(string searchTerm)
         {
             var sb = new StringBuilder();
-            sb.Append(".*");
             foreach(var c in searchTerm)
             {
+                sb.Append(".*");
                 sb.Append(c);
             }
             sb.Append(".*");
