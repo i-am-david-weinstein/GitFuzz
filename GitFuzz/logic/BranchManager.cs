@@ -21,6 +21,11 @@ namespace logic.BranchManager
         public void SwitchBranch(string branch)
         {
 
+            if (branch.Length == 0 || branch[0] == '*')
+            {
+                return;
+            }
+
             Process proc = new Process();
 
             proc.StartInfo.FileName = "git";
